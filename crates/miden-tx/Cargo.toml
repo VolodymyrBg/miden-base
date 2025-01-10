@@ -17,8 +17,8 @@ name = "miden-tx"
 path = "tests/integration/main.rs"
 
 [features]
-async = ["winter-maybe-async/async"]
-concurrent = ["miden-prover/concurrent", "std"]
+async = ["winter-maybe-async/async", "miden-prover/async"]
+concurrent = ["miden-lib/concurrent", "miden-objects/concurrent", "miden-prover/concurrent", "std"]
 default = ["std"]
 std = ["miden-lib/std", "miden-objects/std", "miden-prover/std", "miden-verifier/std", "vm-processor/std"]
 testing = ["miden-objects/testing", "miden-lib/testing", "vm-processor/testing", "dep:rand_chacha"]
@@ -33,7 +33,7 @@ rand = { workspace = true }
 rand_chacha = { version = "0.3", default-features = false, optional = true }
 thiserror = { workspace = true }
 vm-processor = { workspace = true }
-winter-maybe-async = { version = "0.11" }
+winter-maybe-async = { path = "/Users/tomyrd/Proyectos/PolygonMiden/winterfell/utils/maybe_async" }
 
 [dev-dependencies]
 anyhow = { version = "1.0.93", default-features = false, features = ["std", "backtrace"]}
