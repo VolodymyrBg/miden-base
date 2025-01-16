@@ -2,7 +2,8 @@ use alloc::string::ToString;
 
 use miden_objects::{
     accounts::{
-        Account, AccountBuilder, AccountComponent, AccountIdAnchor, AccountStorageMode, AccountType,
+        Account, AccountBuilder, AccountComponent, AccountComponentMetadata,
+        AccountComponentTemplate, AccountIdAnchor, AccountStorageMode, AccountType,
     },
     AccountError, Word,
 };
@@ -26,6 +27,27 @@ use crate::accounts::{auth::RpoFalcon512, components::basic_wallet_library};
 ///
 /// This component supports all account types.
 pub struct BasicWallet;
+
+impl BasicWallet {
+    pub fn get_component_template() -> AccountComponentTemplate {
+        let toml = r#"
+        name = "Basic Wallet"
+        description = "This component represents a basic wallet that can send and receive assets."
+        version = "0.0.1"
+        targets = ["RegularAccountUpdatableCode", "RegularAccountImmutableCode"]
+
+        [[storage]]
+        name = "auth public key"
+        description = "The account's public Falcon key, with which signature verification is performed"
+        slot = 0
+        value = "{{public-key}}" 
+        "#;
+
+        let metadata = AccountComponentMetadata::from_toml(toml).expect("toml is well-formed");
+
+        AccountComponentTemplate::new(metadata, basic_wallet_library())
+    }
+}
 
 impl From<BasicWallet> for AccountComponent {
     fn from(_: BasicWallet) -> Self {

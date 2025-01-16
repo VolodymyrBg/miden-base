@@ -1,7 +1,8 @@
 use miden_objects::{
     accounts::{
-        Account, AccountBuilder, AccountComponent, AccountIdAnchor, AccountStorageMode,
-        AccountType, StorageSlot,
+        Account, AccountBuilder, AccountComponent, AccountComponentMetadata,
+        AccountComponentTemplate, AccountIdAnchor, AccountStorageMode, AccountType,
+        FeltRepresentation, StorageEntry, StoragePlaceholder, StorageSlot, WordRepresentation,
     },
     assets::{FungibleAsset, TokenSymbol},
     AccountError, Felt, FieldElement, Word,
@@ -56,6 +57,24 @@ impl BasicFungibleFaucet {
         }
 
         Ok(Self { symbol, decimals, max_supply })
+    }
+
+    pub fn get_component_template() -> AccountComponentTemplate {
+        let toml = r#"
+        name = "Basic Fungible Faucet"
+        description = "This component represents a basic faucet that can distribute fungible assets."
+        version = "0.0.1"
+        targets = ["FungibleFaucet"]
+        
+        [[storage]]
+        name = "faucet-metadata"
+        description = "The fungible faucet's metadata, comprising max supply, decimals and faucet symbol"
+        slot = 0
+        value = ["{{max-supply}}", "{{decimals}}", "{{symbol}}", "0"]"#;
+
+        let metadata = AccountComponentMetadata::from_toml(toml).expect("toml is well-formed");
+
+        AccountComponentTemplate::new(metadata, basic_fungible_faucet_library())
     }
 }
 
