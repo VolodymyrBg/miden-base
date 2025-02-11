@@ -1,3 +1,5 @@
+use alloc::sync::Arc;
+
 use alloc::{
     boxed::Box,
     string::{String, ToString},
@@ -6,6 +8,7 @@ use alloc::{
 use miden_objects::batch::{ProposedBatch, ProvenBatch};
 use miden_tx::utils::sync::RwLock;
 use miden_tx_batch_prover::errors::BatchProveError;
+use tokio::sync::Mutex;
 
 use super::generated::api_client::ApiClient;
 use crate::RemoteProverError;
@@ -22,10 +25,10 @@ use crate::RemoteProverError;
 /// The transport layer connection is established lazily when the first transaction is proven.
 pub struct RemoteBatchProver {
     #[cfg(target_arch = "wasm32")]
-    client: RwLock<Option<ApiClient<tonic_web_wasm_client::Client>>>,
+    client: Arc<Mutex<Option<ApiClient<tonic_web_wasm_client::Client>>>>,
 
     #[cfg(not(target_arch = "wasm32"))]
-    client: RwLock<Option<ApiClient<tonic::transport::Channel>>>,
+    client: Arc<Mutex<Option<ApiClient<tonic::transport::Channel>>>>,
 
     endpoint: String,
 }
@@ -36,7 +39,7 @@ impl RemoteBatchProver {
     pub fn new(endpoint: &str) -> Self {
         RemoteBatchProver {
             endpoint: endpoint.to_string(),
-            client: RwLock::new(None),
+            client: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -44,7 +47,7 @@ impl RemoteBatchProver {
     /// maintained for the lifetime of the prover. If the connection is already established, this
     /// method does nothing.
     async fn connect(&self) -> Result<(), RemoteProverError> {
-        let mut client = self.client.write();
+        let mut client = self.client.lock().await;
         if client.is_some() {
             return Ok(());
         }
@@ -80,7 +83,8 @@ impl RemoteBatchProver {
 
         let mut client = self
             .client
-            .write()
+            .lock()
+            .await
             .as_ref()
             .ok_or_else(|| BatchProveError::other("client should be connected"))?
             .clone();
