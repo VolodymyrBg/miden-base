@@ -1,6 +1,7 @@
 use alloc::{
     boxed::Box,
     string::{String, ToString},
+    sync::Arc,
 };
 
 use miden_objects::batch::{ProposedBatch, ProvenBatch};
@@ -22,10 +23,10 @@ use crate::RemoteProverError;
 /// The transport layer connection is established lazily when the first transaction is proven.
 pub struct RemoteBatchProver {
     #[cfg(target_arch = "wasm32")]
-    client: RwLock<Option<ApiClient<tonic_web_wasm_client::Client>>>,
+    client: Arc<RwLock<Option<ApiClient<tonic_web_wasm_client::Client>>>>,
 
     #[cfg(not(target_arch = "wasm32"))]
-    client: RwLock<Option<ApiClient<tonic::transport::Channel>>>,
+    client: Arc<RwLock<Option<ApiClient<tonic::transport::Channel>>>>,
 
     endpoint: String,
 }
@@ -36,7 +37,7 @@ impl RemoteBatchProver {
     pub fn new(endpoint: &str) -> Self {
         RemoteBatchProver {
             endpoint: endpoint.to_string(),
-            client: RwLock::new(None),
+            client: Arc::new(RwLock::new(None)),
         }
     }
 
