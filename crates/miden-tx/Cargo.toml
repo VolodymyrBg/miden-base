@@ -17,8 +17,8 @@ name = "miden-tx"
 path = "tests/integration/main.rs"
 
 [features]
-async = ["winter-maybe-async/async", "miden-prover/async"]
-concurrent = [ "miden-prover/concurrent", "std"]
+async = ["winter-maybe-async/async"]
+concurrent = ["miden-prover/concurrent", "std"]
 default = ["std"]
 std = ["miden-lib/std", "miden-objects/std", "miden-prover/std", "miden-verifier/std", "vm-processor/std"]
 testing = ["miden-objects/testing", "miden-lib/testing", "vm-processor/testing", "dep:rand_chacha"]
@@ -28,7 +28,6 @@ winter-maybe-async = { git="https://github.com/tomyrd/winterfell", branch = "tom
 
 [target.'cfg(not(all(target_arch = "wasm32", target_os = "unknown")))'.dependencies]
 winter-maybe-async = { git="https://github.com/tomyrd/winterfell", branch = "tomyrd-maybe-async-send", features = ["async-send"]}
-
 
 [dependencies]
 async-trait = "0.1"
