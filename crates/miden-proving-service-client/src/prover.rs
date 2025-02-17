@@ -42,8 +42,7 @@ impl RemoteTransactionProver {
     /// maintained for the lifetime of the prover. If the connection is already established, this
     /// method does nothing.
     async fn connect(&self) -> Result<(), RemoteProverError> {
-        let mut client = self.client.write();
-        if client.is_some() {
+        if self.client.read().is_some() {
             return Ok(());
         }
 
@@ -60,13 +59,15 @@ impl RemoteTransactionProver {
                 .map_err(|_| RemoteProverError::ConnectionFailed(self.endpoint.to_string()))?
         };
 
+        let mut client = self.client.write();
         *client = Some(new_client);
 
         Ok(())
     }
 }
 
-#[async_trait::async_trait(?Send)]
+#[cfg_attr(not(target_arch = "wasm32"), async_trait::async_trait)]
+#[cfg_attr(target_arch = "wasm32", async_trait::async_trait(?Send))]
 impl TransactionProver for RemoteTransactionProver {
     async fn prove(
         &self,
