@@ -97,6 +97,7 @@ mod test {
         let tx_script =
             TransactionScript::compile(DEFAULT_AUTH_SCRIPT, vec![], TransactionKernel::assembler())
                 .unwrap();
+
         let tx_context = mock_chain
             .build_tx_context(account.id(), &[], &[])
             .input_notes(vec![note_1])
